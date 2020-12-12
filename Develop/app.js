@@ -10,31 +10,80 @@ const outputPath = path.join(OUTPUT_DIR, "team.html");
 
 const render = require("./lib/htmlRenderer");
 
+// empty arrays to store data
+const fullTeam = [];
+const emptyId = [];
 
 // Write code to use inquirer to gather information about the development team members,
 // and to create objects for each team member (using the correct classes as blueprints!)
-function userPrompt() {
-    return inquirer.promp([
+
+// Manager setup section
+const managerSetup = [
+    {
+        type: "input",
+        name: "managerName",
+        message: "Please enter the name of the Manager."
+    },
+    {
+        type: "input",
+        name: "managerId",
+        message: "Please enter the ID of the Manager."
+    },
+    {
+        type: "input",
+        name: "managerEmail",
+        message: "Please enter the Email of the Manager."
+    },
+    {
+        type: "input",
+        name: "managerOfficeNumber",
+        message: "Please enter the office number of the Manager."
+    }
+];  
+
+// function utilizing Inquirer to prompt user on how they want to use the app
+function manager() {
+    console.log("let's get started with building your team!");
+    inquirer.prompt(managerSetup).then(function(data) {
+        const manager = new Manager(data.managerName, data.managerId, data.managerEmail,data.managerOfficeNumber);
+        fullTeam.push(manager);
+        emptyId.push(data.managerId);
+
+        
+        team();
+    });
+};
+
+// team function which is a prompt asking what 
+// role of member you want to add and what their information is
+function team() {
+    inquirer.prompt([
         {
-            type: "input",
-            name: "managerName",
-            message: "Please enter the name of the Manager."
-        },
-        {
-            type: "input",
-            name: "managerId",
-            message: "Please enter the ID of the Manager."
-        },
-        {
-            type: "input",
-            name: "managerEmail",
-            message: "Please enter the Email of the Manager."
-        },
-        {
-            type: "input",
-            name: "managerOfficeNumber",
-            message: "Please enter the office number of the Manager."
-        },
+            type: "list",
+            name: "memberType",
+            message: "What type of employee would you like to add?",
+            choices: [
+                "Engineer",
+                "Intern",
+                "I don't require any new employees."
+            ]
+        }
+    ]).then(function(data) {
+        if (data.memberType === "Engineer") {
+            engineer();
+        } else if (data.memberType === "Intern") {
+            intern();
+        } else (outputTeam());
+        
+    });
+};
+
+// Roles Functions Section //
+
+// Engineer function which takes in the users inputs and pushes it to fullTeam array
+function engineer() {
+    inquirer.prompt([
+        
         {
             type: "input",
             name: "engineerName",
@@ -54,7 +103,20 @@ function userPrompt() {
             type: "input",
             name: "engineerGithub",
             message: "Please enter the Github url of the Engineer."
-        },
+        }
+    ])
+        .then(function(data) {
+            const engineer = new Engineer(data.engineerName, data.engineerId, data.engineerEmail,data.engineerGithub);
+            fullTeam.push(engineer);
+            emptyId.push(data.engineerId);
+            team();
+        });
+};
+
+// Intern function which takes in the users inputs and pushes it to fullTeam array
+function intern() {
+    inquirer.prompt([
+        
         {
             type: "input",
             name: "internName",
@@ -73,41 +135,36 @@ function userPrompt() {
         {
             type: "input",
             name: "internSchool",
-            message: "Please enter the School the Intern is from."
-        },
+            message: "Please enter the School of the Intern."
+        }
+])
+    .then(function(data) {
+        const intern = new Intern(data.internName, data.internId, data.internEmail,data.internSchool);
+        fullTeam.push(intern);
+        emptyId.push(data.internId);
+        team();
+    });
+};
+
+
+
         
-    ])
-}
+
+
 // After the user has input all employees desired, call the `render` function (required
 // above) and pass in an array containing all employee objects; the `render` function will
 // generate and return a block of HTML including templated divs for each employee!
-async function init() {
-    
-    try {
-        const answers = await userPrompt();
   
-        const html = render(answers);
-      //writeFile will creat html page with the answers
-        await writeFileAsync("index.html", html);
-  // After you have your html, you're now ready to create an HTML file using the HTML
-// returned from the `render` function. Now write it to a file named `team.html` in the
-// `output` folder. You can use the variable `outputPath` above target this location.
-// Hint: you may need to check if the `output` folder exists and create it if it
-// does not.
-        console.log("Successfully wrote to index.html");
-    } catch (err) {
-        console.log(err);
+
+
+function outputTeam() {
+    // if output dir doesnt exist, create one
+    if (!fs.existsSync(OUTPUT_DIR)) {
+        fs.mkdirSync(OUTPUT_DIR)
     }
-  }
-  init();
+    // write fullteam array to outputPath variable
+    fs.writeFileSync(outputPath, render(fullTeam), "utf-8");
+}
 
-
-// HINT: each employee type (manager, engineer, or intern) has slightly different
-// information; write your code to ask different questions via inquirer depending on
-// employee type.
-
-// HINT: make sure to build out your classes first! Remember that your Manager, Engineer,
-// and Intern classes should all extend from a class named Employee; see the directions
-// for further information. Be sure to test out each class and verify it generates an
-// object with the correct structure and methods. This structure will be crucial in order
-// for the provided `render` function to work! ```
+// manager function kicks off the app
+manager();
