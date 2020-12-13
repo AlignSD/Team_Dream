@@ -2,7 +2,7 @@
 A team management tool for workplaces
 
 
-![Portforlio screen shot](/assets/Team_Dream_Video_Hi_Fidelity.gif)
+![Portforlio screen shot](/Assets/Team_Dream_Video_Hi_Fidelity.gif)
 
 
 ## Table of Contents
